@@ -1,17 +1,20 @@
 # load required libraries
 library(tree)
 library(shiny)
-library(hash)
+library(shinyWidgets)
+library(bslib)
 
 # set working directory
-# setwd("C:/Users/User/obesity-estimation")
+# setwd("C:/Users/User/obesity-estimation/src")
 
 # load data
 obesity_data <- read.csv("../data/ObesityDataSet_raw_and_data_sinthetic_edited_randomised.csv", header = TRUE, sep = ",", fill = TRUE, stringsAsFactors = TRUE)
 
+# convert variables to correct types
 variables <- c("FCVC", "NCP", "CH2O", "FAF", "TUE")
 
 for (v in variables) {
+  
   # round off synthetic data
   obesity_data[, v] <- as.integer(obesity_data[, v])
   
@@ -25,7 +28,6 @@ obesity_data[, "ObesityCode"] <- as.factor(obesity_data[, "ObesityCode"])
 
 # show summary of data
 summary(obesity_data)
-str(obesity_data)
 
 # the splitting doesnt work bcs the synthetic data all at the end... solution: randomise rows in excel
 obesity_data.train <- obesity_data[1:1477,]
@@ -44,7 +46,6 @@ number_of_leaves <- tuning$size[t]
 
 # output model
 model <- prune.tree(dtree, best=number_of_leaves)
-plot(model)
-text(model)
 
+# run shiny app
 runApp("app.r")

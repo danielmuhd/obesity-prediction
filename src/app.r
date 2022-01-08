@@ -1,61 +1,74 @@
-# Define UI for app that draws a histogram ----
+# define light and dark modes
+
+light_mode <- bs_theme(bootswatch = "flatly", version = 5)
+dark_mode <- bs_theme(bootswatch = "darkly", version = 5)
+
+# define UI for the app
 ui <- fluidPage(
   
-  # Titel der App
+  # set title of app
   titlePanel("Obesity"),
   
-  # Layout für die Eingaben in die App und die Ausgaben
+  theme = light_mode,
+  
+  # use sidebar layout template
   sidebarLayout(
     
-    # Die Definition der Eingabefelder auf der linken Seite
+    # defines input fields on the left
     sidebarPanel(
       
-
-      radioButtons("gender", h5("What is your gender?"),
-                   choices = list("Female" = "Female", "Male" = "Male")),
-      
-      numericInput(inputId="age", 
-                   label="What is your age?:", 
-                   value = 20,
-                   min=0,max=120,step=1
-      ),
-      numericInput(inputId="height", 
-                   label="What is your height? (in meters)", 
-                   value = 1.80,
-                   min=0,max=3.00,step=0.01
-      ),
-      numericInput(inputId="weight", 
-                   label="What is your weight? (in kilograms)", 
-                   value = 90,
-                   min=0,max=500,step=1
-      ),
-      
-      radioButtons("favc", h5("Do you eat high caloric food frequently?"),
-                   choices = list("Yes" = "yes", "No" = "no")),
-      
-      radioButtons("fcvc", h5("Do you usually eat vegetables in your meals?"),
-                    choices = list("Never" = 1, "Sometimes" = 2, "Always"=3)),
-      
-      radioButtons("ncp", h5("How many main meals do you have daily?"),
-                   choices = list("Between 1 and 2" = 1, "3" = 2, "More than 3" = 3)),
-      
-      selectInput("caec", h5("Do you eat any food between meals?"),
-                   choices = list("No" = "no", "Sometimes" = "Sometimes", "Frequently" = "Frequently", "Always" = "Always")),
-      
-      radioButtons("ch2o", h5("How much water do you drink daily?"),
-                   choices = list("Less than a liter" = 1, "Between 1 and 2 L" = 2, "More than 2 L" = 3)),
-      
-      selectInput("faf", h5("How often do you have physical activity?"),
-                  choices = list("I do not have" = 0, "1 or 2 days" = 1, "2 or 4 days" = 2, "4 or 5 days" = 3)),
-      
-      radioButtons("tue", h5("How much time do you use technological devices such as cell phone, videogames, television, computer and others per day?"),
-                   choices = list("0-2 hours" = 0, "3-5 hours" = 1, "More than 5 hours" = 2)),
-      
-      selectInput("calc", h5("How often do you drink alcohol?"),
-                  choices = list("I do not drink" = "no", "Sometimes" = "Sometimes", "Frequently" = "Frequently", "Always" = "Always"),selected = 1),
-      
+      tabsetPanel(type = "tabs",
+                  
+        tabPanel("General",
+                  
+          radioButtons("gender", h5("What is your gender?"),
+                       choices = list("Female" = "Female", "Male" = "Male")),
+          
+          numericInput(inputId="age", 
+                       label="What is your age?:", 
+                       value = 20,
+                       min=0,max=120,step=1),
+          
+          numericInput(inputId="height", 
+                       label="What is your height? (in meters)", 
+                       value = 1.80,
+                       min=0,max=3.00,step=0.01),
+          
+          numericInput(inputId="weight", 
+                       label="What is your weight? (in kilograms)", 
+                       value = 90,
+                       min=0,max=500,step=1),
+          
+          selectInput("faf", h5("How often do you have physical activity?"),
+                      choices = list("I do not have" = 0, "1 or 2 days" = 1, "2 or 4 days" = 2, "4 or 5 days" = 3)),
+          
+          radioButtons("tue", h5("How much time do you use technological devices such as cell phone, videogames, television, computer and others per day?"),
+                       choices = list("0-2 hours" = 0, "3-5 hours" = 1, "More than 5 hours" = 2))
+        ),
+                  
+        tabPanel("Habits",
+                 
+         radioButtons("favc", h5("Do you eat high caloric food frequently?"),
+                      choices = list("Yes" = "yes", "No" = "no")),
+         
+         radioButtons("fcvc", h5("Do you usually eat vegetables in your meals?"),
+                      choices = list("Never" = 1, "Sometimes" = 2, "Always"=3)),
+         
+         radioButtons("ncp", h5("How many main meals do you have daily?"),
+                      choices = list("Between 1 and 2" = 1, "3" = 2, "More than 3" = 3)),
+         
+         selectInput("caec", h5("Do you eat any food between meals?"),
+                     choices = list("No" = "no", "Sometimes" = "Sometimes", "Frequently" = "Frequently", "Always" = "Always")),
+         
+         radioButtons("ch2o", h5("How much water do you drink daily?"),
+                      choices = list("Less than a liter" = 1, "Between 1 and 2 L" = 2, "More than 2 L" = 3)),
+         
+         selectInput("calc", h5("How often do you drink alcohol?"),
+                     choices = list("I do not drink" = "no", "Sometimes" = "Sometimes", "Frequently" = "Frequently", "Always" = "Always"),selected = 1))
+        )
     ),
-    
+      
+      
     # der Hauptbereich der Nutzeroberfläche für die Ausgabe der Ergebnisse
     mainPanel(
       
@@ -65,11 +78,24 @@ ui <- fluidPage(
       # Ausgabe der Prognose
       htmlOutput("Prognose"),
       
+      br(),
+      
+      p(
+        h5("Dark mode"),
+        materialSwitch("dark_mode")
+      ),
+      
     )
   )
 )
 
-server <- function(input, output) {
+server <- function(input, output, session) {
+  
+  # define user variables
+  X <- obesity_data[,c("Gender", "Age","FAVC","FCVC","NCP","CAEC","CH2O","FAF","TUE","CALC")]
+  weight_levels <- c("Underweight", "Normal", "Overweight I", "Overweight II", "Obese I", "Obese II", "Obese III")
+  weight_values <- c(0, 18.5, 24.9, 27.9, 29.9, 34.9, 39.9, 40)
+  actual_level = "NULL"
   
   # Innerhalb dieser Funktion werden die Bilder für die Ausgabe
   # erzeugt und die Ergebnisse berechnet
@@ -78,13 +104,11 @@ server <- function(input, output) {
   prognose <- reactive({
     
     # Speichere die Daten der Einflussvariablen in ein Objekt X
-    X <- obesity_data[,c("Gender", "Age","FAVC","FCVC","NCP","CAEC","CH2O","FAF","TUE","CALC")]
+    #X <- obesity_data[,c("Gender", "Age","FAVC","FCVC","NCP","CAEC","CH2O","FAF","TUE","CALC")]
     
     # Ersetze die erste Zeile in X nun mit den neuen, eingegebenen Werten
     
     X[1, "Age"] <- input$age
-    
-    
     X[1, "Gender"] <- as.factor(input$gender)
     X[1, "FAVC"] <- as.factor(input$favc)
     X[1, "FCVC"] <- as.factor(input$fcvc)
@@ -115,11 +139,6 @@ server <- function(input, output) {
     
     actual_bmi <- round(input$weight / input$height^2, digits = 2)
     
-    weight_levels <- c("Underweight", "Normal", "Overweight I", "Overweight II", "Obese I", "Obese II", "Obese III")
-    weight_values <- c(0, 18.5, 24.9, 27.9, 29.9, 34.9, 39.9, 40)
-    
-    actual_level = "NULL"
-    
     for (i in 1:length(weight_values)) {
       if (actual_bmi < weight_values[i]) {
         actual_level = weight_levels[i-1]
@@ -137,6 +156,10 @@ server <- function(input, output) {
     plot(model)
     text(model)
   })
+  
+  observe(session$setCurrentTheme(
+    if(isTRUE(input$dark_mode)) dark_mode else light_mode
+  ))
   
 }
 
