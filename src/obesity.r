@@ -1,5 +1,7 @@
 # load required libraries
-library(tree)
+# library(tree)
+library(rpart)
+library(rpart.plot)
 library(shiny)
 library(shinyWidgets)
 library(bslib)
@@ -33,19 +35,22 @@ summary(obesity_data)
 obesity_data.train <- obesity_data[1:1477,]
 obesity_data.test <- obesity_data[1478:2111,]
 
-# calculate model
-dtree <- tree(ObesityCode ~ Gender + Age + FAVC + FCVC + NCP + CAEC + CH2O + FAF + TUE + CALC, data = obesity_data)
+# # calculate model
+# dtree <- tree(ObesityCode ~ Gender + Age + FAVC + FCVC + NCP + CAEC + CH2O + FAF + TUE + CALC, data = obesity_data)
+# 
+# # tune model 
+# tuning <- cv.tree(dtree, K=10)
+# 
+# # find optimal number of leaves
+# t <- which.min(tuning$dev)
+# number_of_leaves <- tuning$size[t]
+# 
+# # output model
+# model <- prune.tree(dtree, best=number_of_leaves)
 
-# tune model 
-## k subject to change, hable uses 5 normally
-tuning <- cv.tree(dtree, K=5)
-
-# find optimal number of leaves
-t <- which.min(tuning$dev)
-number_of_leaves <- tuning$size[t]
-
-# output model
-model <- prune.tree(dtree, best=number_of_leaves)
+# calculate model and prune excess leaves
+fit <- rpart(ObesityCode ~ Gender + Age + FAVC + FCVC + NCP + CAEC + CH2O + FAF + TUE + CALC, data = obesity_data, method = "class")
+pruned <- prune(fit, cp = fit$cptable[which.min(fit$cptable[,"xerror"]),"CP"])
 
 # run shiny app
 runApp("app.r")

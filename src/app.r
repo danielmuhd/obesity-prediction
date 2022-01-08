@@ -3,20 +3,21 @@
 light_mode <- bs_theme(bootswatch = "flatly", version = 5)
 dark_mode <- bs_theme(bootswatch = "darkly", version = 5)
 
-# define UI for the app
+# define app UI
 ui <- fluidPage(
   
-  # set title of app
+  # set app title
   titlePanel("Obesity"),
   
+  # set default theme
   theme = light_mode,
   
   # use sidebar layout template
   sidebarLayout(
     
-    # defines input fields on the left
+    # define input fields on the left
     sidebarPanel(
-      
+  
       tabsetPanel(type = "tabs",
                   
         tabPanel("General",
@@ -64,50 +65,57 @@ ui <- fluidPage(
                       choices = list("Less than a liter" = 1, "Between 1 and 2 L" = 2, "More than 2 L" = 3)),
          
          selectInput("calc", h5("How often do you drink alcohol?"),
-                     choices = list("I do not drink" = "no", "Sometimes" = "Sometimes", "Frequently" = "Frequently", "Always" = "Always"),selected = 1))
+                     choices = list("I do not drink" = "no", "Sometimes" = "Sometimes", "Frequently" = "Frequently", "Always" = "Always"),selected = 1)
+         ),
+        
+        tabPanel("Settings",
+        
+          h5(materialSwitch("dark_mode", "Dark mode"))),
+        
+        tabPanel("Help", p("placeholder text"))
         )
-    ),
+      ),
       
       
     # der Hauptbereich der Nutzeroberfläche für die Ausgabe der Ergebnisse
     mainPanel(
       
-      # Ausgabe des Histogramms
+      # output model
       plotOutput(outputId = "Model"),
-      
-      # Ausgabe der Prognose
-      htmlOutput("Prognose"),
       
       br(),
       
-      p(
-        h5("Dark mode"),
-        materialSwitch("dark_mode")
-      ),
+      htmlOutput("Prediction"),
       
+      br(),
+      
+      tabsetPanel(type = "tabs", 
+                  tabPanel("BMI Table", tableOutput("bmiTable")),
+                  tabPanel("Variables", tableOutput("varTable"))),
     )
   )
 )
 
+# define app logic
 server <- function(input, output, session) {
   
-  # define user variables
+  # define static variables
   X <- obesity_data[,c("Gender", "Age","FAVC","FCVC","NCP","CAEC","CH2O","FAF","TUE","CALC")]
-  weight_levels <- c("Underweight", "Normal", "Overweight I", "Overweight II", "Obese I", "Obese II", "Obese III")
-  weight_values <- c(0, 18.5, 24.9, 27.9, 29.9, 34.9, 39.9, 40)
+  bmi_levels <- c("Underweight", "Normal", "Overweight I", "Overweight II", "Obese I", "Obese II", "Obese III")
+  bmi_values_lower <- c(0, 18.5, 25, 27.5, 30, 35, 40)
+  bmi_values_upper <- c(18.5, 25, 27.5, 30, 35, 40, 50)
+  bmi_table <- data.frame(bmi_code = c(seq(0,6)), bmi_levels = bmi_levels, bmi_values_lower = bmi_values_lower, bmi_values_upper = bmi_values_upper)
+  
   actual_level = "NULL"
   
-  # Innerhalb dieser Funktion werden die Bilder für die Ausgabe
-  # erzeugt und die Ergebnisse berechnet
+  var_names <- c("FCVC", "CAEC", "CALC")
+  var_meaning <- c("Frequency of vegetable consumption", "Frequency of eating between meals", "Frequency of drinking alcohol")
+  var_table <- data.frame(names = var_names, meaning = var_meaning)
   
-  # Folgende Funktion berechnet die Prognose für die eingegeben Werte  
-  prognose <- reactive({
+  # predict obesity value for input values  
+  predict_bmi <- reactive({
     
-    # Speichere die Daten der Einflussvariablen in ein Objekt X
-    #X <- obesity_data[,c("Gender", "Age","FAVC","FCVC","NCP","CAEC","CH2O","FAF","TUE","CALC")]
-    
-    # Ersetze die erste Zeile in X nun mit den neuen, eingegebenen Werten
-    
+    # replace values in first row with input values
     X[1, "Age"] <- input$age
     X[1, "Gender"] <- as.factor(input$gender)
     X[1, "FAVC"] <- as.factor(input$favc)
@@ -119,44 +127,48 @@ server <- function(input, output, session) {
     X[1, "TUE"] <- as.factor(input$tue)
     X[1, "CALC"] <- as.factor(input$calc)
     
-    # Berechne die Prognosen für X
-    # die Prognose der neuen, eingegebenen Werte stehen im ersten Eintrag des Prognosevektors
-    prognosevektor <- predict(model, X)
-    prog <- c(prognosevektor[1, 1:7])
-    prog <- round(prog, digits = 2)
+    # calculate prediction for X
+    pred <- predict(pruned, X, type = "class")
     
-    
-    predicted_bmi <- which.max(prog) - 1
-    
-    # print(prog)
+    # predicted bmi from input is in the first row
+    predicted_bmi <- pred[1]
     
     predicted_bmi
   })         
   
-  
-  output$Prognose <- renderUI({
-    prog <- prognose()
+  # show predicted and actual values
+  output$Prediction <- renderUI({
+    
+    predicted_bmi <- predict_bmi()
     
     actual_bmi <- round(input$weight / input$height^2, digits = 2)
     
-    for (i in 1:length(weight_values)) {
-      if (actual_bmi < weight_values[i]) {
-        actual_level = weight_levels[i-1]
+    for (i in 1:length(bmi_values_lower)) {
+      if (actual_bmi < bmi_values_lower[i]) {
+        actual_level = bmi_levels[i-1]
         break
       }
     }
 
-    output <- HTML(paste("Predicted Level: ", weight_levels[prog], "<br>", "Actual Level: ", actual_level, "<br>", "Actual BMI:", actual_bmi))
-    
-    
+    output <- HTML(paste("Predicted Level: ", bmi_levels[predicted_bmi], "<br>", "Actual Level: ", actual_level, "<br>", "Actual BMI:", actual_bmi))
     
   })
   
+  # show plotted model
   output$Model <- renderPlot({
-    plot(model)
-    text(model)
+    
+    # par(bg = NA)
+    rpart.plot(pruned, type = 3, uniform = TRUE, box.palette = "Blues", digits = 1, fallen.leaves = TRUE, varlen = 0, faclen = 0, extra = 0, tweak = 1.15)
+    # plot(model)
+    # text(model)
+    
   })
   
+  # show static tables
+  output$bmiTable <- renderTable(bmi_table, striped = TRUE, digits = 1)
+  output$varTable <- renderTable(var_table, striped = TRUE)
+  
+  # toggle dark mode
   observe(session$setCurrentTheme(
     if(isTRUE(input$dark_mode)) dark_mode else light_mode
   ))
