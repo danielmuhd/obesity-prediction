@@ -26,7 +26,7 @@ ui <- fluidPage(
                        choices = list("Female" = "Female", "Male" = "Male")),
           
           numericInput(inputId="age", 
-                       label=h5("(What is your age?:"), 
+                       label=h5("What is your age?"), 
                        value = 20,
                        min=0,max=120,step=1),
           
