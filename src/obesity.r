@@ -55,7 +55,7 @@ obesity_data.test <- obesity_data[1478:2111,]
 
 # calculate model and prune excess leaves
 #fit <- rpart(ObesityCode ~ Gender + Age + FAVC + FCVC + NCP + CAEC + CH2O + FAF + TUE + CALC, data = obesity_data, method = "class", minsplit = 40)
-fit <- rpart(ObesityCode ~ highCalories + mainMeals + betweenMeals + water + exercise + screens, data = obesity_data, method = "class")
+fit <- rpart(ObesityCode ~ Gender + Age + veggies+ highCalories + mainMeals + betweenMeals + water + exercise + screens + alcohol, data = obesity_data, method = "class")
 pruned <- prune(fit, cp = fit$cptable[which.min(fit$cptable[,"xerror"]),"CP"])
 rpart.plot(pruned, type = 3, uniform = TRUE, box.palette = "Blues", digits = 1, fallen.leaves = TRUE, varlen = 0, faclen = 0, extra = 0)
 

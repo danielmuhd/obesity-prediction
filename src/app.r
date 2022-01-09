@@ -26,17 +26,17 @@ ui <- fluidPage(
                        choices = list("Female" = "Female", "Male" = "Male")),
           
           numericInput(inputId="age", 
-                       label="What is your age?:", 
+                       label=h5("(What is your age?:"), 
                        value = 20,
                        min=0,max=120,step=1),
           
           numericInput(inputId="height", 
-                       label="What is your height? (in meters)", 
+                       label=h5("What is your height? (in meters)"), 
                        value = 1.80,
                        min=0,max=3.00,step=0.01),
           
           numericInput(inputId="weight", 
-                       label="What is your weight? (in kilograms)", 
+                       label=h5("What is your weight? (in kilograms)"), 
                        value = 90,
                        min=0,max=500,step=1),
           
