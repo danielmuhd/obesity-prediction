@@ -28,6 +28,11 @@ for (v in variables) {
 obesity_data[, "Age"] <- as.integer(obesity_data[, "Age"])
 obesity_data[, "ObesityCode"] <- as.factor(obesity_data[, "ObesityCode"])
 
+renamed_variables <- c("highCalories", "veggies", "mainMeals", "betweenMeals", "SMOKE", "water", "SCC", "exercise", "screens", "alcohol", "transport")
+
+for (i in 6:16) {
+  names(obesity_data)[i] = renamed_variables[i-5]
+}
 # show summary of data
 summary(obesity_data)
 
@@ -49,8 +54,10 @@ obesity_data.test <- obesity_data[1478:2111,]
 # model <- prune.tree(dtree, best=number_of_leaves)
 
 # calculate model and prune excess leaves
-fit <- rpart(ObesityCode ~ Gender + Age + FAVC + FCVC + NCP + CAEC + CH2O + FAF + TUE + CALC, data = obesity_data, method = "class")
+#fit <- rpart(ObesityCode ~ Gender + Age + FAVC + FCVC + NCP + CAEC + CH2O + FAF + TUE + CALC, data = obesity_data, method = "class", minsplit = 40)
+fit <- rpart(ObesityCode ~ highCalories + mainMeals + betweenMeals + water + exercise + screens, data = obesity_data, method = "class")
 pruned <- prune(fit, cp = fit$cptable[which.min(fit$cptable[,"xerror"]),"CP"])
+rpart.plot(pruned, type = 3, uniform = TRUE, box.palette = "Blues", digits = 1, fallen.leaves = TRUE, varlen = 0, faclen = 0, extra = 0)
 
 # run shiny app
 runApp("app.r")

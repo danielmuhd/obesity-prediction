@@ -40,10 +40,10 @@ ui <- fluidPage(
                        value = 90,
                        min=0,max=500,step=1),
           
-          selectInput("faf", h5("How often do you have physical activity?"),
-                      choices = list("I do not have" = 0, "1 or 2 days" = 1, "2 or 4 days" = 2, "4 or 5 days" = 3)),
+          selectInput("faf", h5("How often do you carry out physical activities every week?"),
+                      choices = list("0 days" = 0, "1 to 2 days" = 1, "2 to 4 days" = 2, "4 to 5 days" = 3)),
           
-          radioButtons("tue", h5("How much time do you use technological devices such as cell phone, videogames, television, computer and others per day?"),
+          radioButtons("tue", h5("How much time do you spend looking at screens (smartphones, computers, videogames, etc.) per day?"),
                        choices = list("0-2 hours" = 0, "3-5 hours" = 1, "More than 5 hours" = 2))
         ),
                   
@@ -100,7 +100,7 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   
   # define static variables
-  X <- obesity_data[,c("Gender", "Age","FAVC","FCVC","NCP","CAEC","CH2O","FAF","TUE","CALC")]
+  X <- obesity_data[,c("Gender", "Age","highCalories","veggies","mainMeals","betweenMeals","water","exercise","screens","alcohol")]
   bmi_levels <- c("Underweight", "Normal", "Overweight I", "Overweight II", "Obese I", "Obese II", "Obese III")
   bmi_values_lower <- c(0, 18.5, 25, 27.5, 30, 35, 40)
   bmi_values_upper <- c(18.5, 25, 27.5, 30, 35, 40, 50)
@@ -118,14 +118,14 @@ server <- function(input, output, session) {
     # replace values in first row with input values
     X[1, "Age"] <- input$age
     X[1, "Gender"] <- as.factor(input$gender)
-    X[1, "FAVC"] <- as.factor(input$favc)
-    X[1, "FCVC"] <- as.factor(input$fcvc)
-    X[1, "NCP"] <- as.factor(input$ncp)
-    X[1, "CAEC"] <- as.factor(input$caec)
-    X[1, "CH2O"] <- as.factor(input$ch2o)
-    X[1, "FAF"] <- as.factor(input$faf)
-    X[1, "TUE"] <- as.factor(input$tue)
-    X[1, "CALC"] <- as.factor(input$calc)
+    X[1, "highCalories"] <- as.factor(input$favc)
+    X[1, "veggies"] <- as.factor(input$fcvc)
+    X[1, "mainMeals"] <- as.factor(input$ncp)
+    X[1, "betweenMeals"] <- as.factor(input$caec)
+    X[1, "water"] <- as.factor(input$ch2o)
+    X[1, "exercise"] <- as.factor(input$faf)
+    X[1, "screens"] <- as.factor(input$tue)
+    X[1, "alcohol"] <- as.factor(input$calc)
     
     # calculate prediction for X
     pred <- predict(pruned, X, type = "class")
