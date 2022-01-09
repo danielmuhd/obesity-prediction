@@ -90,8 +90,8 @@ ui <- fluidPage(
       br(),
       
       tabsetPanel(type = "tabs", 
-                  tabPanel("BMI Table", tableOutput("bmiTable")),
-                  tabPanel("Variables", tableOutput("varTable"))),
+                  tabPanel("BMI Table", tableOutput("bmiTable")))
+                  #tabPanel("Variables", tableOutput("varTable"))),
     )
   )
 )
@@ -108,9 +108,9 @@ server <- function(input, output, session) {
   
   actual_level = "NULL"
   
-  var_names <- c("FCVC", "CAEC", "CALC")
-  var_meaning <- c("Frequency of vegetable consumption", "Frequency of eating between meals", "Frequency of drinking alcohol")
-  var_table <- data.frame(names = var_names, meaning = var_meaning)
+  #var_names <- c("FCVC", "CAEC", "CALC")
+  #var_meaning <- c("Frequency of vegetable consumption", "Frequency of eating between meals", "Frequency of drinking alcohol")
+  #var_table <- data.frame(names = var_names, meaning = var_meaning)
   
   # predict obesity value for input values  
   predict_bmi <- reactive({
