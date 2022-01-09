@@ -106,6 +106,7 @@ server <- function(input, output, session) {
   bmi_values_upper <- c(18.5, 25, 27.5, 30, 35, 40, 50)
   bmi_table <- data.frame(bmi_code = c(seq(0,6)), bmi_levels = bmi_levels, bmi_values_lower = bmi_values_lower, bmi_values_upper = bmi_values_upper)
   
+  
   actual_level = "NULL"
   
   #var_names <- c("FCVC", "CAEC", "CALC")
@@ -129,7 +130,6 @@ server <- function(input, output, session) {
     
     # calculate prediction for X
     pred <- predict(pruned, X, type = "class")
-    
     # predicted bmi from input is in the first row
     predicted_bmi <- pred[1]
     
@@ -166,7 +166,7 @@ server <- function(input, output, session) {
   
   # show static tables
   output$bmiTable <- renderTable(bmi_table, striped = TRUE, digits = 1)
-  output$varTable <- renderTable(var_table, striped = TRUE)
+  #output$varTable <- renderTable(var_table, striped = TRUE)
   
   # toggle dark mode
   observe(session$setCurrentTheme(
