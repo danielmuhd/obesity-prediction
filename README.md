@@ -1,4 +1,4 @@
-# obesity-estimation
+# obesity-prediction
 
 Predict a person's risk for obesity.
 
@@ -10,7 +10,7 @@ Dataset sourced from the [UCI Machine Learning Repository](https://archive.ics.u
 
 R 4.1.2 - Get it [here](https://cran.r-project.org/).
 
-Required R packages
+R packages
 - bslib
 - rpart
 - rpart.plot
@@ -18,6 +18,8 @@ Required R packages
 - shinyWidgets
 
 ## Usage
+
+In the R console:
 
 0\. Install required packages if missing.
 
@@ -28,13 +30,13 @@ install.packages("package-name")
 1\. Set working directory.
 
 ```r
-setwd("path/obesity-estimation/src")
+setwd("path/obesity-prediction/src")
 ```
 
 2\. Launch the app.
 
 ```r
-source("obesity.r")
+source("main.r")
 ```
 
 ## Contributing
